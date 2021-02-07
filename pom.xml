@@ -46,11 +46,11 @@
             </dependency>
 
             <!--spring-security-oauth2、spring-security-jwt等-->
-            <dependency>
+            <!--<dependency>
                 <groupId>org.springframework.security.oauth.boot</groupId>
                 <artifactId>spring-security-oauth2-autoconfigure</artifactId>
                 <version>${oauth2-autoconfigure.version}</version>
-            </dependency>
+            </dependency>-->
             <!-- kaptcha 用于图形验证码 -->
             <dependency>
                 <groupId>com.github.penggle</groupId>
