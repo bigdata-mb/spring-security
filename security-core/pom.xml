@@ -21,7 +21,6 @@
             <version>${manba-security.version}</version>
         </dependency>
 
-        <!-- spring security 启动器
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-security</artifactId>
@@ -31,6 +30,12 @@
             <groupId>javax.servlet</groupId>
             <artifactId>servlet-api</artifactId>
             <version>2.5</version>
+        </dependency>
+
+        <!-- spring security 启动器
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-security</artifactId>
         </dependency>
         -->
 
