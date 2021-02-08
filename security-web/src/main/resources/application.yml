@@ -4,3 +4,18 @@ server:
 spring:
   thymeleaf:
     cache: true #关闭thymeleaf缓存
+
+manba:
+  security:
+    authentication:
+      loginPage: /login/page
+      loginProcessingUrl: /login/form
+      usernameParameter: name
+      passwordParameter: pwd
+      staticPaths:
+        - /dist/**
+        - /modules/**
+        - /plugins/**
+      loginType: REDIRECT # 认证之后 响应的类型：JSON/REDIRECT
+
+
