@@ -1,6 +1,8 @@
 package com.manba.security.core.config;
 
 import com.manba.security.core.authentication.code.ImageCodeValidateFilter;
+import com.manba.security.core.authentication.mobile.MobileAuthenticationConfig;
+import com.manba.security.core.authentication.mobile.MobileValidateFilter;
 import com.manba.security.core.properties.SecurityProperties;
 import lombok.extern.slf4j.Slf4j;
 import org.slf4j.Logger;
@@ -21,7 +23,6 @@ import org.springframework.security.web.authentication.AuthenticationSuccessHand
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.authentication.rememberme.JdbcTokenRepositoryImpl;
 
-import javax.annotation.Resource;
 import javax.sql.DataSource;
 
 /**
@@ -35,7 +36,7 @@ public class SpringSecurityConfig extends WebSecurityConfigurerAdapter {
     Logger logger = LoggerFactory.getLogger(getClass());
 
     @Autowired
-    UserDetailsService customUserDetailsService;
+    private UserDetailsService customUserDetailsService;
 
     // 配置文件参数
     @Autowired
@@ -51,7 +52,13 @@ public class SpringSecurityConfig extends WebSecurityConfigurerAdapter {
     private ImageCodeValidateFilter imageCodeValidateFilter;
 
     @Autowired
-    DataSource dataSource;
+    private MobileValidateFilter mobileValidateFilter;
+
+    @Autowired
+    private MobileAuthenticationConfig mobileAuthenticationConfig;
+
+    @Autowired
+    private DataSource dataSource;
 
     /**
      * 记住我功能
@@ -62,7 +69,7 @@ public class SpringSecurityConfig extends WebSecurityConfigurerAdapter {
         JdbcTokenRepositoryImpl jdbcTokenRepository = new JdbcTokenRepositoryImpl();
         jdbcTokenRepository.setDataSource(dataSource);
         // 是否启动项目时自动创建表，true自动创建
-        jdbcTokenRepository.setCreateTableOnStartup(true);
+        //jdbcTokenRepository.setCreateTableOnStartup(true);
         return jdbcTokenRepository;
     }
 
@@ -101,7 +108,10 @@ public class SpringSecurityConfig extends WebSecurityConfigurerAdapter {
     @Override
     protected void configure(HttpSecurity http) throws Exception {
 //        http.httpBasic() // 采用 httpBasic认证方式
-        http.addFilterBefore(imageCodeValidateFilter, UsernamePasswordAuthenticationFilter.class).formLogin() // 表单登录方式
+        // 校验手机验证码过滤器
+        http.addFilterBefore(mobileValidateFilter, UsernamePasswordAuthenticationFilter.class)
+                .addFilterBefore(imageCodeValidateFilter, UsernamePasswordAuthenticationFilter.class)
+                .formLogin() // 表单登录方式
                 .loginPage(securityProperties.getAuthentication().getLoginPage())
                 .loginProcessingUrl(securityProperties.getAuthentication().getLoginProcessingUrl()) // 登录表单提交处理url, 默认是/login
                 .usernameParameter(securityProperties.getAuthentication().getUsernameParameter()) //默认的是 username
@@ -110,13 +120,18 @@ public class SpringSecurityConfig extends WebSecurityConfigurerAdapter {
                 .failureHandler(customAuthenticationFailureHandler)
                 .and()
                 .authorizeRequests() // 认证请求
-                .antMatchers(securityProperties.getAuthentication().getLoginPage(),"/code/image").permitAll() // 放行/login/page不需要认证可访问
+                .antMatchers(securityProperties.getAuthentication().getLoginPage(),
+                        "/code/image","/mobile/page", "/code/mobile").permitAll() // 放行/login/page不需要认证可访问
                 .anyRequest().authenticated() //所有访问该应用的http请求都要通过身份认证才可以访问
                 .and()
-                .rememberMe() //记住我
+                .rememberMe() // 记住功能配置
                 .tokenRepository(jdbcTokenRepository()) //保存登录信息
-                .tokenValiditySeconds(60*60*24*7) // 记住我有效时长
+                .tokenValiditySeconds(60*60*24*7) //记住我有效时长
         ; // 注意不要少了分号
+
+        //将手机认证添加到过滤器链上
+        http.apply(mobileAuthenticationConfig);
+
     }
 
     /**
