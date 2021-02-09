@@ -20,6 +20,59 @@ public class AuthenticationProperties {
      */
     private LoginResponseType loginType = LoginResponseType.REDIRECT;
 
+    /**
+     *   * 获取图形验证码 url
+     *   
+     */
+    private String imageCodeUrl = "/code/image";
+    /**
+     *  * 发送手机验证码 url
+     *  
+     */
+    private String mobileCodeUrl = "/code/mobile";
+    /**
+     *  * 前往手机登录页面地址
+     *  
+     */
+    private String mobilePage = "/mobile/page";
+    /**
+     *  * 记住我有效时长
+     *  
+     */
+    private Integer tokenValiditySeconds = 60 * 60 * 24 * 7;
+
+    public String getImageCodeUrl() {
+        return imageCodeUrl;
+    }
+
+    public void setImageCodeUrl(String imageCodeUrl) {
+        this.imageCodeUrl = imageCodeUrl;
+    }
+
+    public String getMobileCodeUrl() {
+        return mobileCodeUrl;
+    }
+
+    public void setMobileCodeUrl(String mobileCodeUrl) {
+        this.mobileCodeUrl = mobileCodeUrl;
+    }
+
+    public String getMobilePage() {
+        return mobilePage;
+    }
+
+    public void setMobilePage(String mobilePage) {
+        this.mobilePage = mobilePage;
+    }
+
+    public Integer getTokenValiditySeconds() {
+        return tokenValiditySeconds;
+    }
+
+    public void setTokenValiditySeconds(Integer tokenValiditySeconds) {
+        this.tokenValiditySeconds = tokenValiditySeconds;
+    }
+
     public LoginResponseType getLoginType() {
         return loginType;
     }
