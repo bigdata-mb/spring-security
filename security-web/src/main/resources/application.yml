@@ -4,6 +4,13 @@ server:
 spring:
   thymeleaf:
     cache: true #关闭thymeleaf缓存
+  # 数据源配置
+  datasource:
+    username: root
+    password: 123456
+    url: jdbc:mysql://192.168.247.100:3306/manba-security?serverTimezone=GMT%2B8&useUnicode=true&characterEncoding=utf8
+    #mysql8版本以上驱动包指定新的驱动类
+    driver-class-name: com.mysql.cj.jdbc.Driver
 
 manba:
   security:

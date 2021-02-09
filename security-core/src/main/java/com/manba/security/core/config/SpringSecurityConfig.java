@@ -19,8 +19,10 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.authentication.AuthenticationFailureHandler;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.security.web.authentication.rememberme.JdbcTokenRepositoryImpl;
 
 import javax.annotation.Resource;
+import javax.sql.DataSource;
 
 /**
  * descriptions:  安全控制配置类作为安全控制中心
@@ -47,6 +49,23 @@ public class SpringSecurityConfig extends WebSecurityConfigurerAdapter {
 
     @Autowired
     private ImageCodeValidateFilter imageCodeValidateFilter;
+
+    @Autowired
+    DataSource dataSource;
+
+    /**
+     * 记住我功能
+     * @return
+     */
+    @Bean
+    public JdbcTokenRepositoryImpl jdbcTokenRepository() {
+        JdbcTokenRepositoryImpl jdbcTokenRepository = new JdbcTokenRepositoryImpl();
+        jdbcTokenRepository.setDataSource(dataSource);
+        // 是否启动项目时自动创建表，true自动创建
+        jdbcTokenRepository.setCreateTableOnStartup(true);
+        return jdbcTokenRepository;
+    }
+
 
     @Bean
     public PasswordEncoder passwordEncoder() {
@@ -93,6 +112,10 @@ public class SpringSecurityConfig extends WebSecurityConfigurerAdapter {
                 .authorizeRequests() // 认证请求
                 .antMatchers(securityProperties.getAuthentication().getLoginPage(),"/code/image").permitAll() // 放行/login/page不需要认证可访问
                 .anyRequest().authenticated() //所有访问该应用的http请求都要通过身份认证才可以访问
+                .and()
+                .rememberMe() //记住我
+                .tokenRepository(jdbcTokenRepository()) //保存登录信息
+                .tokenValiditySeconds(60*60*24*7) // 记住我有效时长
         ; // 注意不要少了分号
     }
 
