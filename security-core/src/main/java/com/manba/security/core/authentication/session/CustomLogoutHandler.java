@@ -14,10 +14,10 @@ import javax.servlet.http.HttpServletResponse;
  * author: clark
  * date: 2021 -02 -09
  */
-//@Component
+@Component
 public class CustomLogoutHandler implements LogoutHandler {
 
-    //@Autowired
+    @Autowired
     private SessionRegistry sessionRegistry;
 
     @Override
@@ -25,6 +25,6 @@ public class CustomLogoutHandler implements LogoutHandler {
                        HttpServletResponse response,
                        Authentication authentication) {
         // 退出之后 ，将对应session从缓存中清除 SessionRegistryImpl.principals
-        //sessionRegistry.removeSessionInformation(request.getSession().getId());
+        sessionRegistry.removeSessionInformation(request.getSession().getId());
     }
 }

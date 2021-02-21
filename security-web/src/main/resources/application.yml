@@ -7,6 +7,12 @@ server:
         name: JSESSIONID # 指定浏览器Cookie中关于SessionID保存的那个名称
 
 spring:
+  session:
+    store-type: redis # session存储方式采用 redis
+  redis: # 如果是本地redis可不配置
+    port: 6379
+    host: 192.168.247.100
+
   thymeleaf:
     cache: true #关闭thymeleaf缓存
   # 数据源配置

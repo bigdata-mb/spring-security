@@ -149,14 +149,27 @@ public class SpringSecurityConfig extends WebSecurityConfigurerAdapter {
                 .invalidSessionStrategy(invalidSessionStrategy)
                 .maximumSessions(1) // 每个用户在系统中最多可以有多少个session
                 .expiredSessionStrategy(sessionInformationExpiredStrategy)// 当用户达到最大session数后，则调用此处的实现
-
-
-        ; // 注意不要少了分号
+                .sessionRegistry(sessionRegistry())
+                .and().and()
+                .logout()
+                .addLogoutHandler(customLogoutHandler) // 退出清除缓存
+                .logoutUrl("/user/logout") // 退出请求路径
+                .logoutSuccessUrl("/mobile/page") //退出成功后跳转地址
+                .deleteCookies("JSESSIONID") // 退出后删除什么cookie值
+        ;
 
         //将手机认证添加到过滤器链上
         http.apply(mobileAuthenticationConfig);
 
+        http.csrf().disable(); // 关闭跨站请求伪造
+
     }
+
+    /**
+     * 退出清除缓存
+     */
+    @Autowired
+    private CustomLogoutHandler customLogoutHandler;
 
     /**
      * 为了解决退出重新登录问题
