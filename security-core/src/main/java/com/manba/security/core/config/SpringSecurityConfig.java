@@ -3,6 +3,7 @@ package com.manba.security.core.config;
 import com.manba.security.core.authentication.code.ImageCodeValidateFilter;
 import com.manba.security.core.authentication.mobile.MobileAuthenticationConfig;
 import com.manba.security.core.authentication.mobile.MobileValidateFilter;
+import com.manba.security.core.authentication.session.CustomLogoutHandler;
 import com.manba.security.core.properties.SecurityProperties;
 import lombok.extern.slf4j.Slf4j;
 import org.slf4j.Logger;
@@ -15,6 +16,8 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.builders.WebSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
+import org.springframework.security.core.session.SessionRegistry;
+import org.springframework.security.core.session.SessionRegistryImpl;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -22,6 +25,8 @@ import org.springframework.security.web.authentication.AuthenticationFailureHand
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.authentication.rememberme.JdbcTokenRepositoryImpl;
+import org.springframework.security.web.session.InvalidSessionStrategy;
+import org.springframework.security.web.session.SessionInformationExpiredStrategy;
 
 import javax.sql.DataSource;
 
@@ -59,6 +64,15 @@ public class SpringSecurityConfig extends WebSecurityConfigurerAdapter {
 
     @Autowired
     private DataSource dataSource;
+
+    @Autowired
+    private InvalidSessionStrategy invalidSessionStrategy;
+
+    /**
+     * 当同个用户session数量超过指定值之后 ,会调用这个实现类
+     */
+    @Autowired
+    private SessionInformationExpiredStrategy sessionInformationExpiredStrategy;
 
     /**
      * 记住我功能
@@ -130,11 +144,27 @@ public class SpringSecurityConfig extends WebSecurityConfigurerAdapter {
                 .rememberMe() // 记住功能配置
                 .tokenRepository(jdbcTokenRepository()) //保存登录信息
                 .tokenValiditySeconds(securityProperties.getAuthentication().getTokenValiditySeconds()) //记住我有效时长
+                .and()
+                .sessionManagement()
+                .invalidSessionStrategy(invalidSessionStrategy)
+                .maximumSessions(1) // 每个用户在系统中最多可以有多少个session
+                .expiredSessionStrategy(sessionInformationExpiredStrategy)// 当用户达到最大session数后，则调用此处的实现
+
+
         ; // 注意不要少了分号
 
         //将手机认证添加到过滤器链上
         http.apply(mobileAuthenticationConfig);
 
+    }
+
+    /**
+     * 为了解决退出重新登录问题
+     * @return
+     */
+    @Bean
+    public SessionRegistry sessionRegistry() {
+        return new SessionRegistryImpl();
     }
 
     /**
