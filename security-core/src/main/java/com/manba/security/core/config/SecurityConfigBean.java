@@ -15,7 +15,7 @@ import org.springframework.security.web.session.SessionInformationExpiredStrateg
 /**
  * descriptions: 主要为容器中添加Bean实例
  * author: clark
- * date: 2021 -02 -09
+ * date: 2021-02-09
  */
 @Configuration
 public class SecurityConfigBean {

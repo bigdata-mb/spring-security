@@ -4,6 +4,7 @@ import com.manba.security.core.authentication.code.ImageCodeValidateFilter;
 import com.manba.security.core.authentication.mobile.MobileAuthenticationConfig;
 import com.manba.security.core.authentication.mobile.MobileValidateFilter;
 import com.manba.security.core.authentication.session.CustomLogoutHandler;
+import com.manba.security.core.authorize.AuthorizeConfigurerManager;
 import com.manba.security.core.properties.SecurityProperties;
 import lombok.extern.slf4j.Slf4j;
 import org.slf4j.Logger;
@@ -43,8 +44,33 @@ import javax.sql.DataSource;
 public class SpringSecurityConfig extends WebSecurityConfigurerAdapter {
     Logger logger = LoggerFactory.getLogger(getClass());
 
+
+    @Bean
+    public PasswordEncoder passwordEncoder() {
+        // 明文+随机盐值》加密存储
+        return new BCryptPasswordEncoder();
+    }
+
     @Autowired
-    private UserDetailsService customUserDetailsService;
+    UserDetailsService customUserDetailsService;
+
+    /**
+     * 认证管理器：
+     * 1. 认证信息（用户名，密码）
+     * @param auth
+     * @throws Exception
+     */
+    @Override
+    protected void configure(AuthenticationManagerBuilder auth) throws Exception {
+        // 数据库存储的密码必须是加密后的，不然会报错：There is no PasswordEncoder mapped for the id "null"
+//        String password = passwordEncoder().encode("1234");
+//        logger.info("加密之后存储的密码：" + password);
+//        auth.inMemoryAuthentication().withUser("mengxuegu")
+//                .password(password).authorities("ADMIN");
+        auth.userDetailsService(customUserDetailsService);
+    }
+
+
 
     // 配置文件参数
     @Autowired
@@ -60,13 +86,15 @@ public class SpringSecurityConfig extends WebSecurityConfigurerAdapter {
     private ImageCodeValidateFilter imageCodeValidateFilter;
 
     @Autowired
+    DataSource dataSource;
+
+    // 校验手机验证码
+    @Autowired
     private MobileValidateFilter mobileValidateFilter;
 
+    // 校验手机号是否存在，就是手机号认证
     @Autowired
     private MobileAuthenticationConfig mobileAuthenticationConfig;
-
-    @Autowired
-    private DataSource dataSource;
 
     @Autowired
     private InvalidSessionStrategy invalidSessionStrategy;
@@ -77,6 +105,9 @@ public class SpringSecurityConfig extends WebSecurityConfigurerAdapter {
     @Autowired
     private SessionInformationExpiredStrategy sessionInformationExpiredStrategy;
 
+
+    @Autowired
+    private AuthorizeConfigurerManager authorizeConfigurerManager;
     /**
      * 记住我功能
      * @return
@@ -86,39 +117,13 @@ public class SpringSecurityConfig extends WebSecurityConfigurerAdapter {
         JdbcTokenRepositoryImpl jdbcTokenRepository = new JdbcTokenRepositoryImpl();
         jdbcTokenRepository.setDataSource(dataSource);
         // 是否启动项目时自动创建表，true自动创建
-        //jdbcTokenRepository.setCreateTableOnStartup(true);
+//        jdbcTokenRepository.setCreateTableOnStartup(true);
         return jdbcTokenRepository;
     }
-
-
-    @Bean
-    public PasswordEncoder passwordEncoder() {
-        // 明文+随机盐值》加密存储
-        return new BCryptPasswordEncoder();
-    }
-
-    /**
-     * 认证管理器：
-     * 1. 认证信息（用户名，密码）
-     *
-     * @param auth
-     * @throws Exception
-     */
-    @Override
-    protected void configure(AuthenticationManagerBuilder auth) throws Exception {
-        // 数据库存储的密码必须是加密后的，不然会报错：There is no PasswordEncoder mapped for the id "null"
-//        String password = passwordEncoder().encode("1234");
-//        logger.info("加密之后存储的密码：" + password);
-//        auth.inMemoryAuthentication().withUser("manba")
-//                .password(password).authorities("ADMIN");
-        auth.userDetailsService(customUserDetailsService);
-    }
-
     /**
      * 当你认证成功之后 ，springsecurity它会重写向到你上一次请求上
      * 资源权限配置：
      * 1. 被拦截的资源
-     *
      * @param http
      * @throws Exception
      */
@@ -136,29 +141,33 @@ public class SpringSecurityConfig extends WebSecurityConfigurerAdapter {
                 .successHandler(customAuthenticationSuccessHandler)
                 .failureHandler(customAuthenticationFailureHandler)
 //                .and()
-//                .authorizeRequests() // 认证请求
-//                .antMatchers(securityProperties.getAuthentication().getLoginPage(),
-//                        securityProperties.getAuthentication().getImageCodeUrl(),
-//                        securityProperties.getAuthentication().getMobileCodeUrl(),
-//                        securityProperties.getAuthentication().getMobilePage()
-//                ).permitAll() // 放行/login/page不需要认证可访问
-//                // 有 sys:user 权限的可以访问任意请求方式的/role
-//                .antMatchers("/user").hasAuthority("sys:user")
-//                // 有 sys:role 权限的可以访问 get方式的/role
-//                .antMatchers(HttpMethod.GET, "/role").hasAuthority("sys:role")
-//                .antMatchers(HttpMethod.GET, "/permission")
-//                // ADMIN 注意角色会在前面加上前缀 ROLE_ , 也就是完整的是 ROLE_ADMIN, ROLE_ROOT
-//                .access("hasAuthority('sys:premission') or hasAnyRole('ADMIN', 'ROOT')")
-//                .anyRequest().authenticated() //所有访问该应用的http请求都要通过身份认证才可以访问
+//                    .authorizeRequests() // 授权请求
+//                    .antMatchers(securityProperties.getAuthentication().getLoginPage(),
+////                    "/code/image","/mobile/page", "/code/mobile"
+//                            securityProperties.getAuthentication().getImageCodeUrl(),
+//                            securityProperties.getAuthentication().getMobilePage(),
+//                            securityProperties.getAuthentication().getMobileCodeUrl()
+//                    ).permitAll() // 放行/login/page不需要认证可访问
+//
+//                    // 有 sys:user 权限的可以访问任意请求方式的/role
+//                    .antMatchers("/user").hasAuthority("sys:user")
+//                    // 有 sys:role 权限的可以访问 get方式的/role
+//                    .antMatchers(HttpMethod.GET,"/role").hasAuthority("sys:role")
+//                    .antMatchers(HttpMethod.GET, "/permission")
+//                    // ADMIN 注意角色会在前面加上前缀 ROLE_ , 也就是完整的是 ROLE_ADMIN, ROLE_ROOT
+//                    .access("hasAuthority('sys:premission') or hasAnyRole('ADMIN', 'ROOT')")
+//
+//                    .anyRequest().authenticated() //所有访问该应用的http请求都要通过身份认证才可以访问
                 .and()
                 .rememberMe() // 记住功能配置
                 .tokenRepository(jdbcTokenRepository()) //保存登录信息
                 .tokenValiditySeconds(securityProperties.getAuthentication().getTokenValiditySeconds()) //记住我有效时长
                 .and()
-                .sessionManagement()
-                .invalidSessionStrategy(invalidSessionStrategy)
+                .sessionManagement()// session管理
+                .invalidSessionStrategy(invalidSessionStrategy) //当session失效后的处理类
                 .maximumSessions(1) // 每个用户在系统中最多可以有多少个session
                 .expiredSessionStrategy(sessionInformationExpiredStrategy)// 当用户达到最大session数后，则调用此处的实现
+                .maxSessionsPreventsLogin(true) // 当一个用户达到最大session数,则不允许后面再登录
                 .sessionRegistry(sessionRegistry())
                 .and().and()
                 .logout()
@@ -166,13 +175,14 @@ public class SpringSecurityConfig extends WebSecurityConfigurerAdapter {
                 .logoutUrl("/user/logout") // 退出请求路径
                 .logoutSuccessUrl("/mobile/page") //退出成功后跳转地址
                 .deleteCookies("JSESSIONID") // 退出后删除什么cookie值
-        ;
+        ;// 注意不要少了分号
 
+        http.csrf().disable(); // 关闭跨站请求伪造
         //将手机认证添加到过滤器链上
         http.apply(mobileAuthenticationConfig);
 
-        http.csrf().disable(); // 关闭跨站请求伪造
-
+        // 将所有的授权配置统一的起来
+        authorizeConfigurerManager.configure(http.authorizeRequests());
     }
 
     /**
@@ -180,7 +190,6 @@ public class SpringSecurityConfig extends WebSecurityConfigurerAdapter {
      */
     @Autowired
     private CustomLogoutHandler customLogoutHandler;
-
     /**
      * 为了解决退出重新登录问题
      * @return
@@ -189,15 +198,13 @@ public class SpringSecurityConfig extends WebSecurityConfigurerAdapter {
     public SessionRegistry sessionRegistry() {
         return new SessionRegistryImpl();
     }
-
     /**
      * 一般是针对静态资源放行
-     *
      * @param web
      * @throws Exception
      */
     @Override
-    public void configure(WebSecurity web) {
-        web.ignoring().antMatchers("/dist/**", "/modules/**", "/plugins/**");
+    public void configure(WebSecurity web){
+        web.ignoring().antMatchers(securityProperties.getAuthentication().getStaticPaths());
     }
 }

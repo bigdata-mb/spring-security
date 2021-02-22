@@ -4,7 +4,7 @@
 <head>
   <meta charset="utf-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
-  <title>Mamba-统一权限管理系统</title>
+  <title>Manba-统一权限管理系统</title>
   <!-- Tell the browser to be responsive to screen width -->
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <!-- Font Awesome -->
@@ -22,13 +22,13 @@
 <body class="hold-transition login-page">
 <div class="login-box">
   <div class="login-logo">
-    <a href="#">Mamba统一权限管理</a>
+    <a href="#">Manba统一权限管理</a>
   </div>
   <!-- /.login-logo -->
   <div class="card">
     <div class="card-body login-card-body">
       <p class="login-box-msg">请登录</p>
-
+      
       <a th:href="@{/mobile/page}" href="login-mobile.html" style="float:right;font-size: 13px;">
         <i class="fa fa-envelope mr-1"></i>使用短信验证登录
       </a>
@@ -50,9 +50,11 @@
           </div>
         </div>
 
+
+
         <div class="row mb-2 ">
           <div class="col-6">
-            <input name="code" type="text" class="form-control" placeholder="验证码">
+              <input name="code" type="text" class="form-control" placeholder="验证码">
           </div>
           <div class="col-6">
             <img onclick="this.src='/code/image?'+Math.random()" src="/code/image" alt="验证码"   />
@@ -65,11 +67,11 @@
 
         <div class="row">
           <div class="col-8">
-            <div class="icheck-primary">
-              <input name="remember-me" type="checkbox" id="remember">
-              <label for="remember">
-                记住我
-              </label>
+              <div class="icheck-primary">
+                <input name="remember-me" type="checkbox" id="remember">
+                <label for="remember">
+                  记住我
+                </label>
             </div>
           </div>
           <!-- /.col -->
@@ -81,16 +83,16 @@
 
       </form>
 
-      <!--
-            <div class="social-auth-links text-center mb-3">
-              <p>- 或 -</p>
-              <a href="#" class="btn btn-block btn-success">
-                <i class="fab fa-wechat mr-2"></i> 微信登录
-              </a>
-              <a href="#" class="btn btn-block btn-primary">
-                <i class="fab fa-qq mr-2"></i> QQ登录
-              </a>
-            </div> -->
+<!--       
+      <div class="social-auth-links text-center mb-3">
+        <p>- 或 -</p>
+        <a href="#" class="btn btn-block btn-success">
+          <i class="fab fa-wechat mr-2"></i> 微信登录
+        </a>
+        <a href="#" class="btn btn-block btn-primary">
+          <i class="fab fa-qq mr-2"></i> QQ登录
+        </a>
+      </div> -->
       <!-- /.social-auth-links -->
 
       <p class="mb-1">
