@@ -11,7 +11,9 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
+import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.builders.WebSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -37,6 +39,7 @@ import javax.sql.DataSource;
  */
 @Configuration
 @EnableWebSecurity // 开启springsecurity过滤链 filter
+@EnableGlobalMethodSecurity(prePostEnabled = true) // 开启注解方法级别权限控制
 public class SpringSecurityConfig extends WebSecurityConfigurerAdapter {
     Logger logger = LoggerFactory.getLogger(getClass());
 
@@ -132,14 +135,21 @@ public class SpringSecurityConfig extends WebSecurityConfigurerAdapter {
                 .passwordParameter(securityProperties.getAuthentication().getPasswordParameter())  // 默认的是 password
                 .successHandler(customAuthenticationSuccessHandler)
                 .failureHandler(customAuthenticationFailureHandler)
-                .and()
-                .authorizeRequests() // 认证请求
-                .antMatchers(securityProperties.getAuthentication().getLoginPage(),
-                        securityProperties.getAuthentication().getImageCodeUrl(),
-                        securityProperties.getAuthentication().getMobileCodeUrl(),
-                        securityProperties.getAuthentication().getMobilePage()
-                ).permitAll() // 放行/login/page不需要认证可访问
-                .anyRequest().authenticated() //所有访问该应用的http请求都要通过身份认证才可以访问
+//                .and()
+//                .authorizeRequests() // 认证请求
+//                .antMatchers(securityProperties.getAuthentication().getLoginPage(),
+//                        securityProperties.getAuthentication().getImageCodeUrl(),
+//                        securityProperties.getAuthentication().getMobileCodeUrl(),
+//                        securityProperties.getAuthentication().getMobilePage()
+//                ).permitAll() // 放行/login/page不需要认证可访问
+//                // 有 sys:user 权限的可以访问任意请求方式的/role
+//                .antMatchers("/user").hasAuthority("sys:user")
+//                // 有 sys:role 权限的可以访问 get方式的/role
+//                .antMatchers(HttpMethod.GET, "/role").hasAuthority("sys:role")
+//                .antMatchers(HttpMethod.GET, "/permission")
+//                // ADMIN 注意角色会在前面加上前缀 ROLE_ , 也就是完整的是 ROLE_ADMIN, ROLE_ROOT
+//                .access("hasAuthority('sys:premission') or hasAnyRole('ADMIN', 'ROOT')")
+//                .anyRequest().authenticated() //所有访问该应用的http请求都要通过身份认证才可以访问
                 .and()
                 .rememberMe() // 记住功能配置
                 .tokenRepository(jdbcTokenRepository()) //保存登录信息
