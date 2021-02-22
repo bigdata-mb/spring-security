@@ -22,6 +22,23 @@ spring:
     url: jdbc:mysql://192.168.247.100:3306/manba-security?serverTimezone=GMT%2B8&useUnicode=true&characterEncoding=utf8
     #mysql8版本以上驱动包指定新的驱动类
     driver-class-name: com.mysql.cj.jdbc.Driver
+    #   数据源其他配置, 在 DruidConfig配置类中手动绑定
+    initialSize: 8
+    minIdle: 5
+    maxActive: 20
+    maxWait: 60000
+    timeBetweenEvictionRunsMillis: 60000
+    minEvictableIdleTimeMillis: 300000
+    validationQuery: SELECT 1 FROM DUAL
+
+mybatis-plus:
+  # 指定实体类所有包
+  type-aliases-package: com.manba.security.web.entities
+
+# 日志级别，会打印sql语句
+logging:
+  level:
+    com.mengxuegu.web.mapper: debug
 
 manba:
   security:
